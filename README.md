@@ -1,2 +1,3 @@
 # OM_ISOM
-my MTP
+THis repository contanins my thesis OM code
+
