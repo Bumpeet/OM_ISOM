@@ -55,7 +55,7 @@ p1[54]={3,1,6,2,7,2,7,6,4,6,5,6,4,7,5,7,5,4,10,11,9,11,9,10,10,2,9,6,9,7,9,4,9,5
 p2[54]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,12,0,0,12,0,12,0,12,0,12,0,12,0,0,12,0,0,16,15,15,17,15,16,16,15,15,17,15,16,15,15,16,15};
 
 
-Real f_i[17](each unit="kmol/hr"),F(unit="kmol/hr"),K_j[54](each unit="kmol/(kgcat.hr)"),Cp_i[17](each unit= "kJ/(kmol.K)"),r_j[54](each unit="kmol/(kgcat.hr)"),y_i[17],x_i[17],T(quantity = "Temperature",unit="K"),Cp0[17],Q_j[17](each unit="kJ/kmol");//,H0[17];//,,Cp_i_T0[17],H[17](each unit="kJ/kmol"),,,del_Hf0[54];
+Real f_i[17](each unit="kmol/hr"),F(unit="kmol/hr"),K_j[54](each unit="kmol/(kgcat.hr)"),Cp_i[17](each unit= "kJ/(kmol.K)"),r_j[54](each unit="kmol/(kgcat.hr)"),y_i[17],x_i[17],T(quantity = "Temperature",unit="K"),Cp0[17],Q_j[17](each unit="kJ/kmol"),Cp_T1[17],Cp_T2[17];//,H0[17];//,,Cp_i_T0[17],H[17](each unit="kJ/kmol"),,,del_Hf0[54];
 
 initial equation
 
@@ -75,11 +75,8 @@ equation
   Cp_i[13:14] = Functions.VapCpId(comp[13:14].VapCp,T);
   Cp_i[15:17] = Functions.VapCpId(comp[15:17].VapCp,T);
   
-
- 
   K_j = F*A_j1.*exp(-E_j*1000/(R*(T)));
-  
-  
+   
 for i in 1:54 loop
 
   if r2[i]==0 then
@@ -94,8 +91,19 @@ for i in 1:54 loop
   Cp0[12] = Functions.VapCpId(comp[12].VapCp, T0);
   Cp0[13:14] = Functions.VapCpId(comp[13:14].VapCp,T0);
   Cp0[15:17] = Functions.VapCpId(comp[15:17].VapCp, T0);
+  
+  Cp_T1[1:11] = Functions.VapCpId(comp[1:11].VapCp,(T-T0)/3);
+  Cp_T1[12] = Functions.VapCpId(comp[12].VapCp,(T-T0)/3);
+  Cp_T1[13:14] = Functions.VapCpId(comp[13:14].VapCp,(T-T0)/3);
+  Cp_T1[15:17] = Functions.VapCpId(comp[15:17].VapCp,(T-T0)/3);
+  
+  Cp_T2[1:11] = Functions.VapCpId(comp[1:11].VapCp,(T-T0)/6);
+  Cp_T2[12] = Functions.VapCpId(comp[12].VapCp,(T-T0)/6);
+  Cp_T2[13:14] = Functions.VapCpId(comp[13:14].VapCp,(T-T0)/6);
+  Cp_T2[15:17] = Functions.VapCpId(comp[15:17].VapCp,(T-T0)/6);
+  
  
-  Q_j = Hf + 0.5*(T-T0)*(Cp_i+Cp0);
+  Q_j = Hf + 0.5*(T-T0)*(Cp_i+Cp0+2*(Cp_T1+Cp_T2));
   
   der(f_i[1])=-(r_j[1]+r_j[36]+r_j[39]+r_j[40]+r_j[2]+r_j[35])+r_j[43]+r_j[51]+r_j[47]  ;
   
@@ -134,6 +142,5 @@ for i in 1:54 loop
   der(T) = sum(der(f_i).*(-Q_j))/sum(f_i.*Cp_i);
   
   der(F) = sum(der(f_i));
-  
 
 end russian;
